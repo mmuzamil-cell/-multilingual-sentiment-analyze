@@ -32,7 +32,7 @@ import {
 
 import './style.css';
 
-const API_BASE = window.location.protocol + '//' + window.location.hostname + ':8081';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : window.location.origin + '/api';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
