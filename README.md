@@ -118,6 +118,6 @@ This boots the React Vite dev server on `http://localhost:5173`. Open this URL i
 
 You can execute a quick end-to-end backend test covering database insertions, language detection, inference lookups, and report exports:
 ```bash
-python C:\Users\muham\.gemini\antigravity-ide\brain\94a444a3-c028-4e2c-87f4-766c665835a3\scratch\verify_backend.py
+python scratch/verify_backend.py
 ```
 This runs assertions across all core systems to verify correctness.
