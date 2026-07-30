@@ -1,10 +1,8 @@
+import os
 import re
 import time
-import torch
 import numpy as np
 from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch.nn.functional as F
 
 from config import (
     FINE_TUNED_MODEL_DIR, 
@@ -38,18 +36,42 @@ class InferencePipeline:
     """Handles end-to-end inference for review sentiment analysis."""
     def __init__(self, model_dir: str = str(FINE_TUNED_MODEL_DIR)):
         self.model_dir = Path(model_dir)
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = None
         self.model = None
         self.is_fallback_mode = False
         
-        self.load_model()
+        # Check if running in Render cloud low-memory environment
+        self.is_render = os.environ.get("RENDER", "false").lower() == "true"
+        
+        if self.is_render:
+            logger.info("Running in Render Cloud Environment. Active Lexicon Heuristics bypass to respect 512MB RAM.")
+            self.device = "cpu"
+            self.is_fallback_mode = True
+        else:
+            try:
+                import torch
+                self.device = "cuda" if torch.cuda.is_available() else "cpu"
+                self.load_model()
+            except ImportError:
+                logger.info("PyTorch not installed. Starting in Lexicon Heuristics mode.")
+                self.device = "cpu"
+                self.is_fallback_mode = True
 
     def load_model(self):
         """Loads the fine-tuned model, falling back to base model or lexicon heuristic if needed."""
         # Check if fine-tuned model path exists with a config file
         config_file = self.model_dir / "config.json"
         
+        try:
+            import torch
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        except ImportError:
+            logger.info("Transformers not installed. Starting in Lexicon Heuristics mode.")
+            self.tokenizer = None
+            self.model = None
+            self.is_fallback_mode = True
+            return
+            
         if self.model_dir.exists() and config_file.exists():
             try:
                 logger.info(f"Loading fine-tuned model from {self.model_dir}...")
@@ -142,6 +164,7 @@ class InferencePipeline:
             sentiment, confidence = self._lexicon_predict(text, lang)
         else:
             try:
+                import torch
                 # Tokenize text
                 inputs = self.tokenizer(
                     cleaned_text,
@@ -158,7 +181,7 @@ class InferencePipeline:
                     outputs = self.model(**inputs)
                     
                 # Apply softmax to get probabilities
-                probs = F.softmax(outputs.logits, dim=1).cpu().numpy()[0]
+                probs = torch.nn.functional.softmax(outputs.logits, dim=1).cpu().numpy()[0]
                 pred_class_id = int(np.argmax(probs))
                 
                 sentiment = SENTIMENT_LABELS[pred_class_id]
