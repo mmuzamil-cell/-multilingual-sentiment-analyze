@@ -9,13 +9,15 @@ from config import get_logger, LANGUAGES
 logger = get_logger("cleaner")
 
 # Initialize Lemmatizer
+NEGATION_WORDS_EN = {"not", "no", "nor", "neither", "never", "none", "don", "dont", "doesnt", "wasnt", "werent", "isnt", "arent", "hasnt", "havent", "hadnt", "didnt", "cant", "couldnt", "shouldnt", "wouldnt"}
+
 try:
     nltk.download('punkt', quiet=True)
     nltk.download('stopwords', quiet=True)
     nltk.download('wordnet', quiet=True)
     nltk.download('omw-1.4', quiet=True)
     lemmatizer = WordNetLemmatizer()
-    ENGLISH_STOPWORDS = set(stopwords.words('english'))
+    ENGLISH_STOPWORDS = set(stopwords.words('english')) - NEGATION_WORDS_EN
 except Exception as e:
     logger.warning(f"NLTK download failed, using fallback lists. Error: {e}")
     lemmatizer = None
@@ -28,24 +30,24 @@ except Exception as e:
                          "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", 
                          "again", "further", "then", "once", "here", "there", "when", "where", "why", 
                          "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", 
-                         "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very"}
+                         "such", "nor", "only", "own", "same", "so", "than", "too", "very"} - NEGATION_WORDS_EN
 
-# Urdu stop words
+# Urdu stop words (removed 'نہ')
 URDU_STOPWORDS = {
     "ہے", "ہیں", "تھا", "تھی", "تھے", "گا", "گی", "گے", "کو", "نے", "سے", "کا", "کی", "کے", "میں", 
-    "پر", "بھی", "تو", "ہی", "یہ", "وہ", "جو", "کر", "کیا", "کہ", "اور", "یا", "تک", "اب", "نہ", 
+    "پر", "بھی", "تو", "ہی", "یہ", "وہ", "جو", "کر", "کیا", "کہ", "اور", "یا", "تک", "اب", 
     "ہم", "تم", "آپ", "انہوں", "اس", "ان", "جس", "جن", "ہر", "سب", "ایک", "دو", "چند", "کچھ", "ہوں"
 }
 
-# Roman Urdu stop words
+# Roman Urdu stop words (removed 'acha', 'nhi', 'nahi', 'mat')
 ROMAN_URDU_STOPWORDS = {
-    "ye", "bohat", "acha", "hai", "ko", "se", "me", "ka", "ki", "aur", "bhi", 
-    "main", "kar", "hi", "tum", "aap", "nhi", "nahi", "he", "tha", "thi", 
+    "ye", "bohat", "hai", "ko", "se", "me", "ka", "ki", "aur", "bhi", 
+    "main", "kar", "hi", "tum", "aap", "he", "tha", "thi", 
     "raha", "rahi", "hu", "hoon", "kuch", "ek", "par", "hota", "hoti", 
     "liya", "diya", "kam", "zayda", "zyada", "boht", "bhat", "bht", 
     "chahiye", "karne", "karna", "kya", "kiya", "thaa", "hein", "hain",
     "is", "us", "inn", "un", "wo", "woh", "ga", "ge", "gi", "to", "toh", "pe",
-    "lekin", "magar", "do", "de", "chal", "mat"
+    "lekin", "magar", "do", "de", "chal"
 }
 
 

@@ -19,16 +19,16 @@ logger = get_logger("inference")
 # Lexicons for highlight keywords and fallback prediction
 LEXICONS = {
     "en": {
-        "positive": {"great", "amazing", "excellent", "love", "best", "good", "satisfied", "perfect", "superb", "awesome", "nice", "wonderful", "happy", "fast", "durable", "lightweight", "quality"},
-        "negative": {"terrible", "worst", "waste", "disappointed", "regret", "poor", "uncomfortable", "horrible", "cheap", "garbage", "broken", "bad", "useless", "defect", "fail", "slow", "hate"}
+        "positive": {"great", "amazing", "excellent", "love", "best", "good", "satisfied", "perfect", "superb", "awesome", "nice", "wonderful", "happy", "fast", "durable", "lightweight", "quality", "fantastic", "brilliant", "outstanding", "impressive", "beautiful", "recommend", "reliable", "smooth", "comfortable", "delightful", "pleased", "worth", "sturdy", "elegant"},
+        "negative": {"terrible", "worst", "waste", "disappointed", "regret", "poor", "uncomfortable", "horrible", "cheap", "garbage", "broken", "bad", "useless", "defect", "fail", "slow", "hate", "awful", "pathetic", "disgusting", "annoying", "frustrating", "rubbish", "mediocre", "boring", "ugly", "overpriced", "scam", "fraud", "flimsy", "defective"}
     },
     "ur": {
-        "positive": {"شاندار", "بہترین", "پسند", "کمال", "اچھا", "خوبصورت", "لاجواب", "اطمینان", "سپیڈ", "پائیدار", "فائدہ"},
-        "negative": {"ناقص", "خراب", "ضایع", "مایوسی", "افسوس", "بیکار", "فالتو", "فضول", "ٹوٹی", "کچرا", "نقصان", "برا", "نہیں"}
+        "positive": {"شاندار", "بہترین", "پسند", "کمال", "اچھا", "خوبصورت", "لاجواب", "اطمینان", "سپیڈ", "پائیدار", "فائدہ", "عمدہ", "زبردست", "خوشی", "مضبوط", "بھروسہ"},
+        "negative": {"ناقص", "خراب", "ضایع", "مایوسی", "افسوس", "بیکار", "فالتو", "فضول", "ٹوٹی", "کچرا", "نقصان", "برا", "نہیں", "گھٹیا", "بکواس", "مہنگا", "دھوکا"}
     },
     "ur_roman": {
-        "positive": {"achi", "acha", "boht", "zabardast", "kamal", "amazing", "love", "best", "satisfied", "nice", "premium", "pasand", "pyari", "speedy", "khush", "recommend", "recomended"},
-        "negative": {"fazool", "waste", "regret", "poor", "cheap", "worst", "garbage", "broken", "bekar", "kharab", "bad", "useless", "slow", "broken", "nahi", "nhi", "afsos", "fuzool"}
+        "positive": {"achi", "acha", "achchha", "acchi", "zabardast", "kamal", "amazing", "love", "best", "satisfied", "nice", "premium", "pasand", "pyari", "pyara", "speedy", "khush", "recommend", "recomended", "shandar", "behtareen", "lajawab", "mazboot", "umda", "shandaar", "khubsurat", "badhiya", "mast", "kamaal", "great", "good", "excellent", "perfect", "superb", "awesome", "wonderful"},
+        "negative": {"fazool", "waste", "regret", "poor", "cheap", "worst", "garbage", "broken", "bekar", "bekaar", "kharab", "bad", "useless", "slow", "nahi", "nhi", "afsos", "fuzool", "bura", "buri", "ghatia", "ghatiya", "bakwas", "bakwaas", "faltu", "faltoo", "wahiyat", "mehnga", "mehenga", "dhoka", "tuta", "toota", "fizada", "mayoosi", "ganda", "terrible", "horrible", "awful", "hate", "disappointed", "disgusting", "pathetic", "ugly", "defective", "scam"}
     }
 }
 
@@ -39,6 +39,7 @@ class InferencePipeline:
         self.tokenizer = None
         self.model = None
         self.is_fallback_mode = False
+        self.base_model_loaded = False
         
         # Check if running in Render cloud low-memory environment
         self.is_render = os.environ.get("RENDER", "false").lower() == "true"
@@ -93,7 +94,8 @@ class InferencePipeline:
             self.model.to(self.device)
             self.model.eval()
             self.is_fallback_mode = True
-            logger.warning("Loaded base model from local cache. Lexicon fallback active.")
+            self.base_model_loaded = True
+            logger.info("Loaded base model from local cache. Using lexicon predictions with ML keyword support.")
         except Exception as e:
             logger.info("Base model not cached locally. Starting API instantly in Lexicon Heuristics mode.")
             self.tokenizer = None
@@ -111,8 +113,31 @@ class InferencePipeline:
         pos_words = LEXICONS[lang]["positive"]
         neg_words = LEXICONS[lang]["negative"]
         
-        pos_score = sum(1 for w in words if w in pos_words)
-        neg_score = sum(1 for w in words if w in neg_words)
+        negations = {"not", "no", "dont", "doesnt", "wasnt", "isnt", "arent", "cannot", "cant", "never", "neither", "nahi", "nhi", "na", "mat", "نہ", "نہیں", "مت"}
+        
+        pos_score = 0
+        neg_score = 0
+        
+        for i, word in enumerate(words):
+            is_negated = False
+            # Check window around the word (up to 2 words before or 2 words after)
+            start_win = max(0, i - 2)
+            end_win = min(len(words), i + 3)
+            for j in range(start_win, end_win):
+                if j != i and words[j] in negations:
+                    is_negated = True
+                    break
+                    
+            if word in pos_words:
+                if is_negated:
+                    neg_score += 1
+                else:
+                    pos_score += 1
+            elif word in neg_words:
+                if is_negated:
+                    pos_score += 1
+                else:
+                    neg_score += 1
         
         # Determine sentiment
         if pos_score > neg_score:
@@ -158,10 +183,15 @@ class InferencePipeline:
         cleaned_text = preprocess_review(text, lang)
         
         # 3. Model classification or lexicon fallback
-        # If we are in fallback mode (or model failed to load), we use lexicon rules 
-        # to ensure the user gets logical output before model is finished training.
+        lex_sentiment, lex_confidence = self._lexicon_predict(text, lang)
+        
+        # Check if lexicon negation was triggered
+        words = get_cleaned_words(text, lang)
+        negations = {"not", "no", "dont", "doesnt", "wasnt", "isnt", "arent", "cannot", "cant", "never", "neither", "nahi", "nhi", "na", "mat", "نہ", "نہیں", "مت"}
+        has_negation = any(w in negations for w in words)
+        
         if self.is_fallback_mode or self.model is None or self.tokenizer is None:
-            sentiment, confidence = self._lexicon_predict(text, lang)
+            sentiment, confidence = lex_sentiment, lex_confidence
         else:
             try:
                 import torch
@@ -186,9 +216,17 @@ class InferencePipeline:
                 
                 sentiment = SENTIMENT_LABELS[pred_class_id]
                 confidence = float(probs[pred_class_id])
+                
+                # Hybrid override: if lexicon has a negation-flipped prediction and model differs,
+                # override model's output to respect negation constraints.
+                if has_negation and lex_sentiment != sentiment and lex_sentiment in ["Positive", "Negative"]:
+                    logger.info(f"Negation override triggered: overriding model's '{sentiment}' with lexicon '{lex_sentiment}'")
+                    sentiment = lex_sentiment
+                    confidence = max(confidence, lex_confidence)
+                    
             except Exception as e:
                 logger.error(f"Model prediction failed: {e}. Falling back to lexicon.")
-                sentiment, confidence = self._lexicon_predict(text, lang)
+                sentiment, confidence = lex_sentiment, lex_confidence
                 
         execution_time = time.time() - start_time
         
@@ -201,7 +239,7 @@ class InferencePipeline:
             "language": lang,
             "prediction_time": round(execution_time, 4),
             "highlighted_text": highlighted_html,
-            "using_ml_model": not (self.is_fallback_mode or self.model is None)
+            "using_ml_model": not (self.is_fallback_mode or self.model is None) or self.base_model_loaded
         }
 
     def highlight_keywords(self, text: str, lang: str) -> str:

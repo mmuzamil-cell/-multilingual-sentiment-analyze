@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import argparse
 import json
 import torch
@@ -232,7 +233,7 @@ def train_model(quick_train: bool = False):
         learning_rate=LEARNING_RATE,
         logging_dir=str(EVAL_DIR / "logs"),
         logging_steps=logging_steps,
-        evaluation_strategy="epoch" if not quick_train else "steps",
+        eval_strategy="epoch" if not quick_train else "steps",
         eval_steps=eval_steps if quick_train else None,
         save_strategy="epoch" if not quick_train else "steps",
         save_steps=save_steps if quick_train else None,

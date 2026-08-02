@@ -20,6 +20,18 @@ ROMAN_URDU_KEYWORDS = {
     "pehle", "pehlay", "pehla", "pehli", "dur", "door", "pass", "paas"
 }
 
+# Words that overlap between common English and Roman Urdu representation
+CONFLICT_WORDS = {"is", "us", "to", "me", "he", "main", "pass", "bad"}
+PURE_ROMAN_URDU_KEYWORDS = ROMAN_URDU_KEYWORDS - CONFLICT_WORDS
+
+# Common English indicator words to offset short text conflicts
+ENGLISH_INDICATORS = {
+    "this", "the", "product", "very", "good", "great", "bad", "worst", "was", "for", "with", 
+    "that", "it", "my", "you", "they", "we", "are", "about", "am", "an", "terrible", "horrible", 
+    "excellent", "perfect", "satisfied", "disappointed", "love", "like", "recommend", "buying",
+    "bought", "item", "purchase", "one", "too", "so", "extremely"
+}
+
 def detect_language(text: str) -> str:
     """
     Detects the language of the given review.
@@ -43,25 +55,39 @@ def detect_language(text: str) -> str:
     urdu_chars = urdu_pattern.findall(text_clean)
     if len(urdu_chars) > 0 and (len(urdu_chars) / len(text_clean)) > 0.15:
         return "ur"
-        # 2. Handle Latin-based scripts: English and Roman Urdu
+        
+    # 2. Handle Latin-based scripts: English and Roman Urdu
     # Clean text to keep alphabetic characters for dictionary matching
     words = re.findall(r"\b[a-zA-Z']+\b", text_clean.lower())
     if not words:
         return "unknown"
         
-    # Calculate fraction of Roman Urdu words
+    # Calculate counts
     roman_urdu_word_count = sum(1 for w in words if w in ROMAN_URDU_KEYWORDS)
+    pure_roman_urdu_count = sum(1 for w in words if w in PURE_ROMAN_URDU_KEYWORDS)
+    english_count = sum(1 for w in words if w in ENGLISH_INDICATORS)
+    
     roman_urdu_ratio = roman_urdu_word_count / len(words)
     
-    # If a high ratio of words are Roman Urdu, classify as ur_roman
-    # Even a lower ratio (e.g. 20%) can indicate Roman Urdu if the text is short
-    if roman_urdu_ratio >= 0.20 or (len(words) <= 5 and roman_urdu_word_count >= 1):
+    # Refined Roman Urdu classification
+    is_roman_urdu = False
+    if pure_roman_urdu_count >= 1:
+        # If pure Roman Urdu words are present, it's highly likely Roman Urdu
+        is_roman_urdu = True
+    elif roman_urdu_word_count >= 1:
+        # Only overlapping conflict words matched
+        # If English indicator words are dominant, it's English, otherwise if short it's Roman Urdu
+        if english_count > 0 and english_count >= roman_urdu_word_count:
+            is_roman_urdu = False
+        elif len(words) <= 5:
+            is_roman_urdu = True
+            
+    if is_roman_urdu:
         return "ur_roman"
         
     # 4. Fall back to langdetect for general-purpose language detection
     try:
         predictions = detect_langs(text_clean)
-        # Sort predictions by probability (should be already sorted, but be safe)
         top_pred = predictions[0]
         
         if top_pred.lang == "en" and top_pred.prob > 0.5:

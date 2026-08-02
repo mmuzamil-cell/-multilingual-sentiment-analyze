@@ -26,7 +26,12 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "Five stars! Exceeded my expectations in every way.",
                 "The customer service was great and the product is top notch.",
                 "Very lightweight, portable, and extremely durable.",
-                "Best purchase I have made this year. High quality."
+                "Best purchase I have made this year. High quality.",
+                "This is not bad at all, actually pretty good!",
+                "It is not terrible, quite satisfied with the performance.",
+                "No complaints, works perfectly and smoothly.",
+                "I have no regrets purchasing this product.",
+                "Not a waste of money, highly recommend this item."
             ],
             "Neutral": [
                 "It is okay, nothing special but works fine.",
@@ -38,7 +43,9 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "It is fine for basic use, but professional users might want more.",
                 "Shipping was fast but the product is just average.",
                 "Mediocre product. It works but feels cheap.",
-                "Fair value for the price, but don't expect too much."
+                "Fair value for the price, but don't expect too much.",
+                "It is not bad but it is not great either.",
+                "Performance is normal, nothing to write home about."
             ],
             "Negative": [
                 "Terrible product, broke on the first day of use!",
@@ -50,7 +57,11 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "Extremely low quality. The description was completely misleading.",
                 "The product looks cheap and functions even worse.",
                 "Do not waste your money on this garbage.",
-                "Customer support was unhelpful and the product is broken."
+                "Customer support was unhelpful and the product is broken.",
+                "This is not good, very disappointed with the brand.",
+                "Not recommended, it failed after a few uses.",
+                "It is not amazing, rather poor design and execution.",
+                "I do not like this product, worst experience."
             ]
         },
 
@@ -65,7 +76,11 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "پانچ ستارے! میری توقعات سے بڑھ کر نکلا۔",
                 "سروس بہت اچھی تھی اور پروڈکٹ بھی لاجواب ہے۔",
                 "بہت ہلکا پھلکا، پورٹیبل اور انتہائی پائیدار۔",
-                "اس سال کی میری بہترین خریداری۔ اعلیٰ ترین معیار۔"
+                "اس سال کی میری بہترین خریداری۔ اعلیٰ ترین معیار۔",
+                "یہ خراب نہیں ہے، قیمت کے حساب سے بہترین ہے۔",
+                "کوئی شکایت نہیں ہے، بہترین کام کر رہا ہے۔",
+                "یہ بیکار نہیں ہے، مجھے بہت پسند آیا۔",
+                "پیسے ضائع نہیں ہوئے، بہت اچھی چیز ہے۔"
             ],
             "Neutral": [
                 "یہ عام سی چیز ہے، نہ زیادہ اچھی نہ خراب۔ کام چل جاتا ہے۔",
@@ -77,7 +92,8 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "بنیادی استعمال کے لیے ٹھیک ہے، لیکن پیشہ ورانہ استعمال کے لیے نہیں۔",
                 "قیمت کے لحاظ سے مناسب ہے لیکن زیادہ توقع نہ رکھیں۔",
                 "کام تو کرتا ہے لیکن بناوٹ سستی معلوم ہوتی ہے۔",
-                "نارمل پروڈکٹ ہے، روزمرہ کام کے لیے مناسب ہے۔"
+                "نارمل پروڈکٹ ہے، روزمرہ کام کے لیے مناسب ہے۔",
+                "نہ بہت اچھا ہے نہ بہت برا، بس ٹھیک ٹھاک ہے۔"
             ],
             "Negative": [
                 "بہت ہی ناقص پروڈکٹ ہے، پہلے ہی دن خراب ہو گئی!",
@@ -89,13 +105,16 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "بہت ہی گھٹیا کوالٹی۔ تفصیلات بالکل جھوٹ پر مبنی تھیں۔",
                 "پروڈکٹ دکھنے میں بھی سستی ہے اور کام بھی نہیں کرتی۔",
                 "اس کچرے پر اپنے پیسے برباد مت کریں۔",
-                "کسٹمر سپورٹ کا رویہ خراب تھا اور پروڈکٹ ٹوٹی ہوئی ملی۔"
+                "کسٹمر سپورٹ کا رویہ خراب تھا اور پروڈکٹ ٹوٹی ہوئی ملی۔",
+                "یہ اچھا نہیں ہے، کوالٹی بہت ناقص ہے۔",
+                "خریداری کا اچھا تجربہ نہیں رہا، پیسے ضائع ہوگئے۔",
+                "اطمینان بخش نہیں ہے، خراب کوالٹی کی پروڈکٹ ہے۔"
             ]
         },
         "ur_roman": {
             "Positive": [
                 "Ye product bohat achi hai, main iski high recommendation deta hoon!",
-                "Battery backup boht zabardast hai aur screen quality bhi kamal hai.",
+                "Battery backup boht zabardast hai aur screen quality bhi kamaal hai.",
                 "Price ke hisab se behtareen quality hai. Delivery bhi fast thi.",
                 "Zabardast product hai, boht pasand aya. Zaroor dobara loonga.",
                 "Build quality kamaal ki hai aur use karna boht easy hai.",
@@ -103,7 +122,12 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "Five stars! Meri umeedon se zyada acha nikla ye mobile.",
                 "Customer care boht acha tha aur product to premium quality ki hai.",
                 "Boht lightweight hai, easily carry ho jata hai aur solid hai.",
-                "Best purchase hai meri is saal ki. Maza aa gaya use karke."
+                "Best purchase hai meri is saal ki. Maza aa gaya use karke.",
+                "Ye kharab nahi hai, boht acha chal rha hai.",
+                "Normal quality nahi hai, balkey premium feeling hai.",
+                "Koi complaint nahi hai, solid build quality hai.",
+                "Regret nahi hai is purchase pe, paisa vasool hai.",
+                "Paisa zaya nahi hua, achi item mili hai."
             ],
             "Neutral": [
                 "Theek thaak product hai, normal kaam karta hai. Kuch special nahi.",
@@ -115,7 +139,8 @@ def generate_synthetic_data() -> pd.DataFrame:
                 "Basic usage ke liye thik hai, high-end works ke liye suitable nahi.",
                 "Price ke hisab se okay product hai, zyada umeed mat rakhein.",
                 "Work karta hai par feel kafi cheap quality ki hai.",
-                "Normal sa phone hai, simple requirements ke liye standard hai."
+                "Normal sa phone hai, simple requirements ke liye standard hai.",
+                "Na bohat behtareen hai na bekar, mid level hai."
             ],
             "Negative": [
                 "Bohat hi fazool product hai, pehle din hi kharab ho gyi!",
