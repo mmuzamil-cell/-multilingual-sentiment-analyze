@@ -458,3 +458,84 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 16px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sidebar-logo {
+        width: 100%;
+        justify-content: center;
+        padding-bottom: 16px;
+        margin-bottom: 12px;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
+        margin-top: 8px;
+        gap: 8px;
+    }
+
+    .nav-item {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .sidebar-footer {
+        display: none;
+    }
+
+    .content-panel {
+        margin-left: 0;
+        padding: 24px 16px;
+        width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .dropzone {
+        padding: 24px 16px;
+    }
+}
